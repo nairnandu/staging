@@ -1,0 +1,57 @@
+name: Sync MWG External Metrics
+on:
+  schedule:
+    - cron: '30 5,17 * * *'   # Twice daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: mwg-metrics
+
+      - name: Fetch api.npmjs.org & skills.sh
+        run: |
+          python3 - <<'PY'
+          from datetime import datetime, timezone
+          import json, re, urllib.request
+
+          today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+          npm_url = f"https://api.npmjs.org/downloads/range/2026-01-01:{today}/modern-web-guidance"
+          req = urllib.request.Request(npm_url, headers={"User-Agent": "mwg-metrics-sync/1.0"})
+          npm_data = json.loads(urllib.request.urlopen(req, timeout=15).read().decode("utf-8"))
+          downloads = npm_data.get("downloads") or []
+          npm_total = sum(int(d.get("downloads", 0)) for d in downloads)
+
+          skills_url = "https://www.skills.sh/googlechrome/modern-web-guidance/modern-web-guidance"
+          s_req = urllib.request.Request(skills_url, headers={"User-Agent": "mwg-metrics-sync/1.0"})
+          html = urllib.request.urlopen(s_req, timeout=15).read().decode("utf-8", errors="ignore")
+          m = (
+              re.search(r'"interactionType"\s*:\s*"https://schema\.org/InstallAction"\s*,\s*"userInteractionCount"\s*:\s*(\d+)', html)
+              or re.search(r'"userInteractionCount"\s*:\s*(\d+)', html)
+          )
+          if not m:
+            raise RuntimeError("Failed to parse skills.sh userInteractionCount")
+
+          payload = {
+              "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "npm_total": npm_total,
+              "skills_total": int(m.group(1)),
+              "npm_downloads": downloads,
+          }
+          with open("mwg_external_metrics.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2)
+          PY
+
+      - name: Commit & push updated snapshot
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mwg_external_metrics.json
+          git diff --cached --quiet || git commit -m "chore: sync mwg metrics"
+          git push origin mwg-metrics
