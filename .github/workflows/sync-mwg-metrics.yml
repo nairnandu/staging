@@ -22,7 +22,7 @@ jobs:
           import json, re, urllib.request
 
           today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-          npm_url = f"https://api.npmjs.org/downloads/range/2026-01-01:{today}/modern-web-guidance"
+          npm_url = f"https://api.npmjs.org/downloads/range/2026-04-29:{today}/modern-web-guidance"
           req = urllib.request.Request(npm_url, headers={"User-Agent": "mwg-metrics-sync/1.0"})
           npm_data = json.loads(urllib.request.urlopen(req, timeout=15).read().decode("utf-8"))
           downloads = npm_data.get("downloads") or []
