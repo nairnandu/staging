@@ -41,4 +41,3 @@ Both pull from `api.npmjs.org`, so normal completed weeks match. Divergences in 
 
 ### 4. Raw API Counts vs. Gap-Interpolated Reports
 * Both `mwg_external_metrics.json` and `npm-stat.com` report **raw, unadjusted** figures (preserving literal `0`s on any `api.npmjs.org` outage days that npm has not yet backfilled). Analytics reports that apply day-of-week interpolation across unresolved `0`-download outage days will naturally show a higher adjusted cumulative total.
-````
