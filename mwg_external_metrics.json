@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-11-22T22:38:11Z",
-  "npm_total": 1546637,
-  "skills_total": 81802,
+  "updated_at": "2026-11-23T16:17:30Z",
+  "npm_total": 1599386,
+  "skills_total": 83642,
   "npm_downloads": [
     {
       "downloads": 0,
@@ -832,8 +832,12 @@
       "day": "2026-11-21"
     },
     {
-      "downloads": 0,
+      "downloads": 52749,
       "day": "2026-11-22"
+    },
+    {
+      "downloads": 0,
+      "day": "2026-11-23"
     }
   ]
 }
